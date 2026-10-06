@@ -1,26 +1,52 @@
 import { signOut } from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { addUser, removeUser } from "../utils/userSlice";
+import { LOGO } from "../utils/constant";
 
 const Header = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
   const handleSignOut = () => {
     signOut(auth)
-      .then(() => {
-        navigate("/"); // Redirect to the login page after sign-out
-      })
+      .then(() => {})
       .catch((error) => {
-        console.error("Sign-out failed:", error);
+        navigate("/error"); // Redirect to an error page or show an error message
       });
   };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const { uid, email, displayName, photoURL } = user;
+        dispatch(
+          addUser({
+            uid: uid,
+            email: email,
+            displayName: displayName,
+            photoURL: photoURL,
+          }),
+        );
+        navigate("/browse"); // Redirect to the browse page if the user is authenticated
+      } else {
+        dispatch(removeUser());
+        navigate("/"); // Redirect to the login page if the user is not authenticated
+      }
+    });
+
+    return unsubscribe;
+  }, [dispatch]);
+
   return (
     <div className="absolute top-0 left-0 z-20 w-full px-12 py-2 bg-gradient-to-b from-black/80 via-black/50 to-transparent flex items-center justify-between">
       <div>
         <img
           className="w-44"
-          src="https://help.nflxext.com/helpcenter/OneTrust/oneTrust_production_2026-08-21/consent/87b6a5c0-0104-4e96-a291-092c11350111/019ae4b5-d8fb-7693-90ba-7a61d24a8837/logos/dd6b162f-1a32-456a-9cfe-897231c7763c/4345ea78-053c-46d2-b11e-09adaef973dc/Netflix_Logo_PMS.png"
+          src={LOGO}
           alt="Netflix Logo"
         />
       </div>

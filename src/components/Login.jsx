@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+
 import Header from "./Header";
 import { checkValidData } from "../utils/validate";
 import {
@@ -10,11 +10,12 @@ import {
 import { auth } from "../utils/firebase";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
+import { LOGIN_BG, USER_AVATAR } from "../utils/constant";
 
 const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [errMessage, setErrMessage] = useState("");
-  const navigate = useNavigate();
+
   const dispatch = useDispatch();
 
   const fullName = useRef(null);
@@ -42,12 +43,10 @@ const Login = () => {
           try {
             await updateProfile(user, {
               displayName: fullName.current.value.trim(),
-              photoURL:
-                "https://lh3.googleusercontent.com/ogw/AF2bZyhWyfiYxgQloy4ZObzsKOVIjc9XSSW8bpJn9dDAWveoTgs=s32-c-mo",
+              photoURL: USER_AVATAR,
             });
             const { uid, email, displayName, photoURL } = user;
             dispatch(addUser({ uid, email, displayName, photoURL }));
-            navigate("/browse");
           } catch (error) {
             setErrMessage(`${error.code}: ${error.message}`);
           }
@@ -65,12 +64,10 @@ const Login = () => {
       )
         .then((userCredential) => {
           const user = userCredential.user;
-          navigate("/browse");
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
-          console.error("Error signing in:", errorCode, errorMessage);
           setErrMessage(errorCode + ": " + errorMessage);
         });
     }
@@ -87,7 +84,7 @@ const Login = () => {
       <div>
         <img
           className="w-full h-screen object-cover"
-          src="https://assets.nflxext.com/ffe/siteui/vlv3/ab1fe332-993a-44d1-b60b-cd4f8d11b96e/web/IN-en-20260928-TRIFECTA-perspective_85aef51c-94d6-41ea-a1ea-1e77199158f1_large.jpg"
+          src={LOGIN_BG}
           alt="login background"
         />
       </div>
